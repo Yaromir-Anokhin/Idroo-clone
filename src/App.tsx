@@ -299,16 +299,20 @@ function App() {
         context.setLineDash([3, 3]); context.beginPath(); context.ellipse(centerX, centerY, w / 2, h * .22, 0, Math.PI, Math.PI * 2); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'pyramid') {
-        const apex = { x: left + w / 2, y: top }, baseLeft = { x: left, y: bottom }, baseRight = { x: right, y: bottom }, baseBack = { x: left + w * .22, y: bottom - h * .2 }, baseBackRight = { x: right - w * .22, y: bottom - h * .2 }
-        context.beginPath(); context.moveTo(apex.x, apex.y); context.lineTo(baseLeft.x, baseLeft.y); context.lineTo(baseRight.x, baseRight.y); context.lineTo(apex.x, apex.y); context.stroke()
-        context.beginPath(); context.moveTo(apex.x, apex.y); context.lineTo(baseBack.x, baseBack.y); context.lineTo(baseBackRight.x, baseBackRight.y); context.stroke()
-        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(baseLeft.x, baseLeft.y); context.lineTo(baseBack.x, baseBack.y); context.moveTo(baseRight.x, baseRight.y); context.lineTo(baseBackRight.x, baseBackRight.y); context.moveTo(apex.x, apex.y); context.lineTo((baseBack.x + baseBackRight.x) / 2, (baseBack.y + baseBackRight.y) / 2); context.stroke(); context.setLineDash([])
+        const apex = { x: left + w / 2, y: top }, frontLeft = { x: left, y: bottom }, frontRight = { x: right, y: bottom }
+        const backLeft = { x: left + w * .22, y: bottom - h * .2 }, backRight = { x: right - w * .22, y: bottom - h * .2 }
+        context.beginPath(); context.moveTo(apex.x, apex.y); context.lineTo(frontLeft.x, frontLeft.y); context.lineTo(frontRight.x, frontRight.y); context.closePath(); context.stroke()
+        context.beginPath(); context.moveTo(apex.x, apex.y); context.lineTo(backLeft.x, backLeft.y); context.lineTo(backRight.x, backRight.y); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(frontLeft.x, frontLeft.y); context.lineTo(backLeft.x, backLeft.y); context.moveTo(frontRight.x, frontRight.y); context.lineTo(backRight.x, backRight.y); context.moveTo(apex.x, apex.y); context.lineTo((backLeft.x + backRight.x) / 2, (backLeft.y + backRight.y) / 2); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'prism') {
-        const offsetX = Math.max(14, w * .22), offsetY = Math.max(12, h * .2), frontRight = right - offsetX, backRight = right, backTop = top - offsetY
-        context.beginPath(); context.moveTo(left, top); context.lineTo(frontRight, top); context.lineTo(frontRight, bottom); context.lineTo(left, bottom); context.closePath(); context.stroke()
-        context.beginPath(); context.moveTo(left, top); context.lineTo(left + offsetX, backTop); context.lineTo(backRight, backTop); context.lineTo(frontRight, top); context.moveTo(frontRight, top); context.lineTo(backRight, backTop); context.lineTo(backRight - offsetX, bottom - offsetY); context.lineTo(frontRight, bottom); context.stroke()
-        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, bottom); context.lineTo(left + offsetX, bottom - offsetY); context.moveTo(left + offsetX, bottom - offsetY); context.lineTo(backRight - offsetX, bottom - offsetY); context.stroke(); context.setLineDash([])
+        const offsetX = Math.max(14, w * .22), offsetY = Math.max(12, h * .2)
+        const frontLeft = { x: left, y: top + offsetY }, frontRight = { x: right - offsetX, y: top + offsetY }, frontBottomRight = { x: right - offsetX, y: bottom }, frontBottomLeft = { x: left, y: bottom }
+        const backLeft = { x: left + offsetX, y: top }, backRight = { x: right, y: top }, backBottomRight = { x: right, y: bottom - offsetY }, backBottomLeft = { x: left + offsetX, y: bottom - offsetY }
+        context.beginPath(); context.moveTo(frontLeft.x, frontLeft.y); context.lineTo(frontRight.x, frontRight.y); context.lineTo(frontBottomRight.x, frontBottomRight.y); context.lineTo(frontBottomLeft.x, frontBottomLeft.y); context.closePath(); context.stroke()
+        context.beginPath(); context.moveTo(backLeft.x, backLeft.y); context.lineTo(backRight.x, backRight.y); context.lineTo(backBottomRight.x, backBottomRight.y); context.moveTo(backLeft.x, backLeft.y); context.lineTo(backBottomLeft.x, backBottomLeft.y); context.moveTo(backBottomLeft.x, backBottomLeft.y); context.lineTo(backBottomRight.x, backBottomRight.y); context.moveTo(backRight.x, backRight.y); context.lineTo(frontRight.x, frontRight.y); context.moveTo(backBottomRight.x, backBottomRight.y); context.lineTo(frontBottomRight.x, frontBottomRight.y); context.stroke()
+        context.beginPath(); context.moveTo(backLeft.x, backLeft.y); context.lineTo(frontLeft.x, frontLeft.y); context.moveTo(backBottomLeft.x, backBottomLeft.y); context.lineTo(frontBottomLeft.x, frontBottomLeft.y); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(frontBottomLeft.x, frontBottomLeft.y); context.lineTo(backBottomLeft.x, backBottomLeft.y); context.lineTo(backBottomRight.x, backBottomRight.y); context.stroke(); context.setLineDash([])
       }
     }
     if (shape.id === selectedId) { const bounds = shape.points.map(worldToScreen), minX = Math.min(...bounds.map(p => p.x)) - 8, minY = Math.min(...bounds.map(p => p.y)) - 8, maxX = Math.max(...bounds.map(p => p.x)) + 8, maxY = Math.max(...bounds.map(p => p.y)) + 8; context.setLineDash([4, 4]); context.strokeStyle = '#3978C8'; context.lineWidth = 1; context.strokeRect(minX, minY, maxX - minX, maxY - minY); context.setLineDash([]) }
