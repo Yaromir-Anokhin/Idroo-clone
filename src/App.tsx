@@ -6,7 +6,7 @@ import {
   RotateCcw, Share2, Square, Triangle, Type, Users, ZoomIn, ZoomOut,
 } from 'lucide-react'
 
-type Tool = 'select' | 'pan' | 'pen' | 'line' | 'arrow' | 'rectangle' | 'parallelogram' | 'ellipse' | 'triangle' | 'rhombus' | 'pentagon' | 'hexagon' | 'octagon' | 'star' | 'cube' | 'cylinder' | 'cone' | 'sphere' | 'pyramid' | 'prism' | 'eraser' | 'text'
+type Tool = 'select' | 'pan' | 'pen' | 'line' | 'arrow' | 'rectangle' | 'parallelogram' | 'ellipse' | 'triangle' | 'rhombus' | 'pentagon' | 'hexagon' | 'octagon' | 'polygon' | 'cube' | 'cylinder' | 'cone' | 'sphere' | 'pyramid' | 'prism' | 'eraser' | 'text'
 type Point = { x: number; y: number }
 type Shape = {
   id: string; kind: Exclude<Tool, 'select' | 'pan' | 'eraser'>; points: Point[]
@@ -22,7 +22,7 @@ const tools: { id: Tool; label: string; icon: typeof Pen }[] = [
   { id: 'parallelogram', label: 'Parallelogram', icon: Square }, { id: 'ellipse', label: 'Circle / ellipse', icon: Circle },
   { id: 'triangle', label: 'Triangle', icon: Triangle }, { id: 'rhombus', label: 'Rhombus', icon: Diamond },
   { id: 'pentagon', label: 'Pentagon', icon: Diamond }, { id: 'hexagon', label: 'Hexagon', icon: Diamond },
-  { id: 'octagon', label: 'Octagon', icon: Diamond }, { id: 'star', label: 'Star', icon: Diamond },
+  { id: 'octagon', label: 'Octagon', icon: Diamond }, { id: 'polygon', label: 'Polygon', icon: Diamond },
   { id: 'cube', label: '3D cube', icon: Box }, { id: 'cylinder', label: '3D cylinder', icon: Cylinder },
   { id: 'cone', label: '3D cone', icon: Cone }, { id: 'sphere', label: '3D sphere', icon: Circle },
   { id: 'pyramid', label: '3D pyramid', icon: Triangle }, { id: 'prism', label: '3D prism', icon: Box },
@@ -33,7 +33,7 @@ const ShapeGlyph = ({ kind }: { kind: Tool }) => {
   const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
   const paths: Record<string, string> = {
     rectangle: 'M4 4h16v16H4z', parallelogram: 'M7 4h14l-4 16H3z', ellipse: 'M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16', triangle: 'M12 4l9 16H3z', rhombus: 'M12 3l9 9-9 9-9-9z',
-    pentagon: 'M12 3l8 6-3 10H7L4 9z', hexagon: 'M7 4h10l5 8-5 8H7l-5-8z', octagon: 'M8 3h8l5 5v8l-5 5H8l-5-5V8z', star: 'M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
+    pentagon: 'M12 3l8 6-3 10H7L4 9z', hexagon: 'M7 4h10l5 8-5 8H7l-5-8z', octagon: 'M8 3h8l5 5v8l-5 5H8l-5-5V8z', polygon: 'M12 3l6.5 3.2 2 7-4.5 6.2h-8L3.5 13l2-6.8z',
     cube: 'M4 7l5-4 11 3-5 4zM4 7v12l11 2V10M15 10l5-4v12l-5 3', cylinder: 'M4 6a8 3 0 1 0 16 0a8 3 0 1 0-16 0M4 6v12a8 3 0 1 0 16 0V6', cone: 'M12 3L4 19a8 3 0 1 0 16 0z', sphere: 'M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0M4 12a8 3 0 1 0 16 0a8 3 0 1 0-16 0M12 4a4 8 0 1 0 0 16a4 8 0 1 0 0-16', pyramid: 'M12 3L4 19h16zM12 3v16M4 19l8-5 8 5', prism: 'M4 7l5-4h11l-5 4zM4 7v12h11V7M15 7v12l5-4V3',
   }
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path {...common} d={paths[kind] || paths.rectangle} /></svg>
@@ -265,9 +265,8 @@ function App() {
       if (shape.kind === 'ellipse') context.ellipse(left + w / 2, top + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2), context.stroke()
       if (shape.kind === 'triangle') { context.moveTo(left + w / 2, top); context.lineTo(left + w, top + h); context.lineTo(left, top + h); context.closePath(); context.stroke() }
       if (shape.kind === 'rhombus') { const polygon = polygonPoints({ x: left + w / 2, y: top + h / 2 }, w / 2, h / 2, 4, 0); context.moveTo(polygon[0].x, polygon[0].y); polygon.slice(1).forEach(point => context.lineTo(point.x, point.y)); context.closePath(); context.stroke() }
-      const polygonSides = { pentagon: 5, hexagon: 6, octagon: 8 }[shape.kind as 'pentagon' | 'hexagon' | 'octagon']
+      const polygonSides = { pentagon: 5, hexagon: 6, octagon: 8, polygon: 7 }[shape.kind as 'pentagon' | 'hexagon' | 'octagon' | 'polygon']
       if (polygonSides) { const polygon = polygonPoints({ x: left + w / 2, y: top + h / 2 }, w / 2, h / 2, polygonSides); context.moveTo(polygon[0].x, polygon[0].y); polygon.slice(1).forEach(point => context.lineTo(point.x, point.y)); context.closePath(); context.stroke() }
-      if (shape.kind === 'star') { const polygon = polygonPoints({ x: left + w / 2, y: top + h / 2 }, w / 2, h / 2, 10); context.moveTo(polygon[0].x, polygon[0].y); polygon.slice(1).forEach((point, index) => context.lineTo(point.x, point.y)); context.closePath(); context.stroke() }
       if (shape.kind === 'cube') {
         const offsetX = Math.max(14, w * .24), offsetY = Math.max(12, h * .2)
         const backLeft = left + offsetX, backTop = top - offsetY
@@ -300,15 +299,16 @@ function App() {
         context.setLineDash([3, 3]); context.beginPath(); context.ellipse(centerX, centerY, w / 2, h * .22, 0, Math.PI, Math.PI * 2); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'pyramid') {
-        const apex = { x: left + w / 2, y: top }, frontLeft = { x: left, y: bottom }, frontRight = { x: right, y: bottom }, back = { x: left + w * .22, y: bottom - h * .2 }, backRight = { x: right - w * .22, y: bottom - h * .2 }
-        context.beginPath(); context.moveTo(apex.x, apex.y); context.lineTo(frontLeft.x, frontLeft.y); context.lineTo(frontRight.x, frontRight.y); context.lineTo(apex.x, apex.y); context.moveTo(apex.x, apex.y); context.lineTo(back.x, back.y); context.lineTo(backRight.x, backRight.y); context.lineTo(apex.x, apex.y); context.stroke()
-        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(back.x, back.y); context.lineTo(backRight.x, backRight.y); context.moveTo(apex.x, apex.y); context.lineTo((back.x + backRight.x) / 2, (back.y + backRight.y) / 2); context.stroke(); context.setLineDash([])
+        const apex = { x: left + w / 2, y: top }, baseLeft = { x: left, y: bottom }, baseRight = { x: right, y: bottom }, baseBack = { x: left + w * .22, y: bottom - h * .2 }, baseBackRight = { x: right - w * .22, y: bottom - h * .2 }
+        context.beginPath(); context.moveTo(apex.x, apex.y); context.lineTo(baseLeft.x, baseLeft.y); context.lineTo(baseRight.x, baseRight.y); context.lineTo(apex.x, apex.y); context.stroke()
+        context.beginPath(); context.moveTo(apex.x, apex.y); context.lineTo(baseBack.x, baseBack.y); context.lineTo(baseBackRight.x, baseBackRight.y); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(baseLeft.x, baseLeft.y); context.lineTo(baseBack.x, baseBack.y); context.moveTo(baseRight.x, baseRight.y); context.lineTo(baseBackRight.x, baseBackRight.y); context.moveTo(apex.x, apex.y); context.lineTo((baseBack.x + baseBackRight.x) / 2, (baseBack.y + baseBackRight.y) / 2); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'prism') {
-        const offsetX = Math.max(14, w * .22), offsetY = Math.max(12, h * .2), frontRight = right - offsetX, backLeft = left + offsetX, backTop = top - offsetY
-        context.strokeRect(left, top, w - offsetX, h); context.beginPath(); context.moveTo(backLeft, backTop); context.lineTo(right, backTop); context.lineTo(right - offsetX, bottom - offsetY); context.lineTo(frontRight, bottom); context.stroke()
-        context.beginPath(); context.moveTo(left, top); context.lineTo(backLeft, backTop); context.moveTo(frontRight, top); context.lineTo(right, backTop); context.stroke()
-        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, bottom); context.lineTo(backLeft, bottom - offsetY); context.stroke(); context.setLineDash([])
+        const offsetX = Math.max(14, w * .22), offsetY = Math.max(12, h * .2), frontRight = right - offsetX, backRight = right, backTop = top - offsetY
+        context.beginPath(); context.moveTo(left, top); context.lineTo(frontRight, top); context.lineTo(frontRight, bottom); context.lineTo(left, bottom); context.closePath(); context.stroke()
+        context.beginPath(); context.moveTo(left, top); context.lineTo(left + offsetX, backTop); context.lineTo(backRight, backTop); context.lineTo(frontRight, top); context.moveTo(frontRight, top); context.lineTo(backRight, backTop); context.lineTo(backRight - offsetX, bottom - offsetY); context.lineTo(frontRight, bottom); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, bottom); context.lineTo(left + offsetX, bottom - offsetY); context.moveTo(left + offsetX, bottom - offsetY); context.lineTo(backRight - offsetX, bottom - offsetY); context.stroke(); context.setLineDash([])
       }
     }
     if (shape.id === selectedId) { const bounds = shape.points.map(worldToScreen), minX = Math.min(...bounds.map(p => p.x)) - 8, minY = Math.min(...bounds.map(p => p.y)) - 8, maxX = Math.max(...bounds.map(p => p.x)) + 8, maxY = Math.max(...bounds.map(p => p.y)) + 8; context.setLineDash([4, 4]); context.strokeStyle = '#3978C8'; context.lineWidth = 1; context.strokeRect(minX, minY, maxX - minX, maxY - minY); context.setLineDash([]) }
@@ -350,7 +350,7 @@ function App() {
 
   return <main className="app-shell">
     <header className="topbar"><div className="brand-mark"><span>m</span><strong>Math Board</strong></div><div className="room-meta"><span className="room-name">Algebra room</span><span className={`connection ${connected ? 'online' : ''}`}><i />{connected ? 'Connected' : 'Connecting'}</span><span className="participant-count"><Users size={14} /> {shapes.length ? '2' : '1'}</span></div><button className="share-button" onClick={share}>{copied ? <Check size={16} /> : <Share2 size={16} />}{copied ? 'Copied' : 'Share link'}</button></header>
-    <aside className="tool-rail">{tools.map(({ id, label, icon: Icon }, index) => <span key={id} className={index === 2 || index === 5 || index === 8 ? 'tool-divider' : ''}><button aria-label={label} title={label} className={`tool-button ${tool === id ? 'active' : ''}`} onClick={() => setTool(id)}>{id === 'rectangle' || id === 'parallelogram' || id === 'ellipse' || id === 'triangle' || id === 'rhombus' || id === 'pentagon' || id === 'hexagon' || id === 'octagon' || id === 'star' || id === 'cube' || id === 'cylinder' || id === 'cone' || id === 'sphere' || id === 'pyramid' || id === 'prism' ? <ShapeGlyph kind={id} /> : <Icon size={19} strokeWidth={1.8} />}</button></span>)}</aside>
+    <aside className="tool-rail">{tools.map(({ id, label, icon: Icon }, index) => <span key={id} className={index === 2 || index === 5 || index === 8 ? 'tool-divider' : ''}><button aria-label={label} title={label} className={`tool-button ${tool === id ? 'active' : ''}`} onClick={() => setTool(id)}>{id === 'rectangle' || id === 'parallelogram' || id === 'ellipse' || id === 'triangle' || id === 'rhombus' || id === 'pentagon' || id === 'hexagon' || id === 'octagon' || id === 'polygon' || id === 'cube' || id === 'cylinder' || id === 'cone' || id === 'sphere' || id === 'pyramid' || id === 'prism' ? <ShapeGlyph kind={id} /> : <Icon size={19} strokeWidth={1.8} />}</button></span>)}</aside>
     <canvas ref={canvasRef} className={`whiteboard-canvas cursor-${tool}`} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onWheel={zoomAt} />
     <div className="zoom-control"><button title="Zoom out" aria-label="Zoom out" onClick={() => { viewportRef.current.zoom = Math.max(.35, viewportRef.current.zoom - .1); setZoomPercent(Math.round(viewportRef.current.zoom * 100)); draw() }}><ZoomOut size={16} /></button><span>{zoomPercent}%</span><button title="Zoom in" aria-label="Zoom in" onClick={() => { viewportRef.current.zoom = Math.min(3.5, viewportRef.current.zoom + .1); setZoomPercent(Math.round(viewportRef.current.zoom * 100)); draw() }}><ZoomIn size={16} /></button><button title="Reset view" aria-label="Reset view" onClick={() => { viewportRef.current = { x: 0, y: 0, zoom: 1 }; setZoomPercent(100); draw() }}><RotateCcw size={15} /></button></div>
     <section className="property-bar"><div className="property-group"><span className="property-label">Ink</span>{colors.map(item => <button key={item} aria-label={`Use ${item} ink`} className={`swatch ${color === item ? 'selected' : ''}`} style={{ backgroundColor: item }} onClick={() => setColor(item)} />)}</div><div className="property-separator" /><div className="property-group"><span className="property-label">Stroke</span>{widths.map(item => <button key={item.value} className={`width-button width-${item.value} ${width === item.value ? 'selected' : ''}`} onClick={() => setWidth(item.value)} title={item.label}><span /></button>)}</div><div className="status-hint">{tool === 'select' ? 'Select and move objects' : tools.find(item => item.id === tool)?.label}</div></section>
