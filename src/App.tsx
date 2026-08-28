@@ -100,8 +100,12 @@ function App() {
     sync()
     let provider: WebrtcProvider | null = null
     try {
-      provider = new WebrtcProvider(`math-board-${roomId}`, doc)
+      provider = new WebrtcProvider(`math-board-${roomId}`, doc, {
+        signaling: ['wss://y-webrtc-eu.fly.dev', 'wss://y-webrtc-us.fly.dev'],
+        maxConns: 20,
+      })
       provider.on('status', ({ connected }: { connected: boolean }) => setConnected(connected))
+      provider.connect()
     } catch {
       setConnected(false)
     }

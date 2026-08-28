@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Open the local Vite URL in two browser windows. The app creates a room hash automatically; sharing that URL joins the same collaborative room.
+Open the local Vite URL in two browser windows. Copy the complete URL, including the `#room-...` hash, into both windows; that hash is the room identity. WebRTC collaboration requires `localhost` during local testing or an HTTPS deployment in production.
 
 ## Production
 
