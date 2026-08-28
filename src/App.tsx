@@ -268,17 +268,17 @@ function App() {
       const polygonSides = { pentagon: 5, hexagon: 6, octagon: 8, polygon: 7 }[shape.kind as 'pentagon' | 'hexagon' | 'octagon' | 'polygon']
       if (polygonSides) { const polygon = polygonPoints({ x: left + w / 2, y: top + h / 2 }, w / 2, h / 2, polygonSides); context.moveTo(polygon[0].x, polygon[0].y); polygon.slice(1).forEach(point => context.lineTo(point.x, point.y)); context.closePath(); context.stroke() }
       if (shape.kind === 'cube') {
-        const offsetX = Math.max(14, w * .24), offsetY = Math.max(12, h * .2)
+        const size = Math.max(12, Math.min(w, h)), offsetX = Math.max(10, size * .24), offsetY = Math.max(10, size * .2)
         const backLeft = left + offsetX, backTop = top - offsetY
-        context.strokeRect(left, top, w, h)
-        context.strokeRect(backLeft, backTop, w, h)
+        context.strokeRect(left, top, size, size)
+        context.strokeRect(backLeft, backTop, size, size)
         context.beginPath()
         context.moveTo(left, top); context.lineTo(backLeft, backTop)
-        context.moveTo(left + w, top); context.lineTo(backLeft + w, backTop)
-        context.moveTo(left, top + h); context.lineTo(backLeft, backTop + h)
-        context.moveTo(left + w, top + h); context.lineTo(backLeft + w, backTop + h)
+        context.moveTo(left + size, top); context.lineTo(backLeft + size, backTop)
+        context.moveTo(left, top + size); context.lineTo(backLeft, backTop + size)
+        context.moveTo(left + size, top + size); context.lineTo(backLeft + size, backTop + size)
         context.stroke()
-        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, top + h); context.lineTo(backLeft, backTop + h); context.stroke(); context.setLineDash([])
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, top + size); context.lineTo(backLeft, backTop + size); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'cylinder') {
         const radiusX = Math.max(12, w / 2), radiusY = Math.max(5, Math.min(18, radiusX * .28)), centerX = left + w / 2
@@ -306,7 +306,7 @@ function App() {
         context.setLineDash([3, 3]); context.beginPath(); context.moveTo(frontLeft.x, frontLeft.y); context.lineTo(backLeft.x, backLeft.y); context.moveTo(frontRight.x, frontRight.y); context.lineTo(backRight.x, backRight.y); context.moveTo(apex.x, apex.y); context.lineTo((backLeft.x + backRight.x) / 2, (backLeft.y + backRight.y) / 2); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'prism') {
-        const offsetX = Math.max(14, w * .22), offsetY = Math.max(12, h * .2)
+        const offsetX = Math.max(16, w * .22), offsetY = Math.max(12, h * .2)
         const frontLeft = { x: left, y: top + offsetY }, frontRight = { x: right - offsetX, y: top + offsetY }, frontBottomRight = { x: right - offsetX, y: bottom }, frontBottomLeft = { x: left, y: bottom }
         const backLeft = { x: left + offsetX, y: top }, backRight = { x: right, y: top }, backBottomRight = { x: right, y: bottom - offsetY }, backBottomLeft = { x: left + offsetX, y: bottom - offsetY }
         context.beginPath(); context.moveTo(frontLeft.x, frontLeft.y); context.lineTo(frontRight.x, frontRight.y); context.lineTo(frontBottomRight.x, frontBottomRight.y); context.lineTo(frontBottomLeft.x, frontBottomLeft.y); context.closePath(); context.stroke()
