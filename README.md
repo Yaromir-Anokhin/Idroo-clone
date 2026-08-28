@@ -20,7 +20,17 @@ npm run preview
 
 ## Free hosting
 
-The app is a static Vite site. The repository includes `netlify.toml` for one-click Netlify deployment.
+The app is a static Vite site. The repository includes `netlify.toml` for one-click Netlify deployment and `render.yaml` for the required WebSocket signaling service.
+
+### Enable real-time collaboration
+
+1. In [dashboard.render.com](https://dashboard.render.com/), choose **New > Blueprint** and select this repository.
+2. Deploy the `math-board-signaling` free web service from `render.yaml`.
+3. Copy its URL, for example `https://math-board-signaling.onrender.com`.
+4. In Netlify, open **Site configuration > Environment variables** and add `VITE_SIGNALING_URL` with the value `wss://math-board-signaling.onrender.com`.
+5. Trigger a new Netlify deploy.
+
+Render's free service may sleep when idle; the first connection after inactivity can take a few seconds.
 
 For Netlify:
 
@@ -48,4 +58,4 @@ Publish the `dist` directory. Configure the host to rewrite unknown routes to `i
 - Select an object and press `Delete` to remove it. Keyboard shortcuts: `V` select, `H` pan, `P` pen, `E` eraser.
 - Share the URL from the top-right button. The room identity is the URL hash.
 
-The WebRTC provider uses browser peer discovery and does not require a separate application server for the whiteboard state.
+The WebRTC provider uses the Render WebSocket service only for peer discovery. The whiteboard state itself remains peer-to-peer and is not stored on the server.

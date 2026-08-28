@@ -100,8 +100,9 @@ function App() {
     sync()
     let provider: WebrtcProvider | null = null
     try {
+      const signalingUrl = import.meta.env.VITE_SIGNALING_URL || 'wss://y-webrtc-eu.fly.dev'
       provider = new WebrtcProvider(`math-board-${roomId}`, doc, {
-        signaling: ['wss://y-webrtc-eu.fly.dev', 'wss://y-webrtc-us.fly.dev'],
+        signaling: [signalingUrl],
         maxConns: 20,
       })
       provider.on('status', ({ connected }: { connected: boolean }) => setConnected(connected))
