@@ -279,7 +279,7 @@ function App() {
         context.moveTo(left, top + h); context.lineTo(backLeft, backTop + h)
         context.moveTo(left + w, top + h); context.lineTo(backLeft + w, backTop + h)
         context.stroke()
-        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, top + h); context.lineTo(backLeft, backTop + h); context.moveTo(left, top); context.lineTo(backLeft, backTop); context.stroke(); context.setLineDash([])
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, top + h); context.lineTo(backLeft, backTop + h); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'cylinder') {
         const radiusX = Math.max(12, w / 2), radiusY = Math.max(5, Math.min(18, radiusX * .28)), centerX = left + w / 2
@@ -289,15 +289,27 @@ function App() {
       }
       if (shape.kind === 'cone') {
         const centerX = left + w / 2, baseY = top + h, radiusX = Math.max(12, w / 2), radiusY = Math.max(5, Math.min(18, radiusX * .28))
-        context.beginPath(); context.moveTo(centerX, top); context.lineTo(left, baseY - radiusY); context.moveTo(centerX, top); context.lineTo(left + w, baseY - radiusY); context.stroke(); context.setLineDash([3, 3]); context.beginPath(); context.ellipse(centerX, baseY - radiusY, radiusX, radiusY, 0, 0, Math.PI); context.stroke(); context.setLineDash([])
+        context.beginPath(); context.moveTo(centerX, top); context.lineTo(left, baseY - radiusY); context.moveTo(centerX, top); context.lineTo(left + w, baseY - radiusY); context.ellipse(centerX, baseY - radiusY, radiusX, radiusY, 0, Math.PI, Math.PI * 2); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.ellipse(centerX, baseY - radiusY, radiusX, radiusY, 0, 0, Math.PI); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'sphere') {
         const centerX = left + w / 2, centerY = top + h / 2
         context.ellipse(centerX, centerY, w / 2, h / 2, 0, 0, Math.PI * 2); context.stroke()
-        context.beginPath(); context.ellipse(centerX, centerY, w * .22, h / 2, 0, 0, Math.PI * 2); context.ellipse(centerX, centerY, w / 2, h * .22, 0, 0, Math.PI * 2); context.stroke()
+        context.beginPath(); context.ellipse(centerX, centerY, w * .22, h / 2, 0, 0, Math.PI * 2); context.stroke()
+        context.beginPath(); context.ellipse(centerX, centerY, w / 2, h * .22, 0, 0, Math.PI); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.ellipse(centerX, centerY, w / 2, h * .22, 0, Math.PI, Math.PI * 2); context.stroke(); context.setLineDash([])
       }
-      if (shape.kind === 'pyramid') { const centerX = left + w / 2; context.beginPath(); context.moveTo(centerX, top); context.lineTo(left, bottom); context.lineTo(right, bottom); context.closePath(); context.moveTo(centerX, top); context.lineTo(centerX, bottom); context.stroke() }
-      if (shape.kind === 'prism') { const offset = Math.max(12, w * .2); context.strokeRect(left, top, w - offset, h); context.strokeRect(left + offset, top - offset, w - offset, h); context.beginPath(); context.moveTo(left, top); context.lineTo(left + offset, top - offset); context.moveTo(right - offset, top); context.lineTo(right, top - offset); context.moveTo(right - offset, bottom); context.lineTo(right, bottom - offset); context.moveTo(left, bottom); context.lineTo(left + offset, bottom - offset); context.stroke() }
+      if (shape.kind === 'pyramid') {
+        const apex = { x: left + w / 2, y: top }, frontLeft = { x: left, y: bottom }, frontRight = { x: right, y: bottom }, back = { x: left + w * .22, y: bottom - h * .2 }, backRight = { x: right - w * .22, y: bottom - h * .2 }
+        context.beginPath(); context.moveTo(apex.x, apex.y); context.lineTo(frontLeft.x, frontLeft.y); context.lineTo(frontRight.x, frontRight.y); context.lineTo(apex.x, apex.y); context.moveTo(apex.x, apex.y); context.lineTo(back.x, back.y); context.lineTo(backRight.x, backRight.y); context.lineTo(apex.x, apex.y); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(back.x, back.y); context.lineTo(backRight.x, backRight.y); context.moveTo(apex.x, apex.y); context.lineTo((back.x + backRight.x) / 2, (back.y + backRight.y) / 2); context.stroke(); context.setLineDash([])
+      }
+      if (shape.kind === 'prism') {
+        const offsetX = Math.max(14, w * .22), offsetY = Math.max(12, h * .2), frontRight = right - offsetX, backLeft = left + offsetX, backTop = top - offsetY
+        context.strokeRect(left, top, w - offsetX, h); context.beginPath(); context.moveTo(backLeft, backTop); context.lineTo(right, backTop); context.lineTo(right - offsetX, bottom - offsetY); context.lineTo(frontRight, bottom); context.stroke()
+        context.beginPath(); context.moveTo(left, top); context.lineTo(backLeft, backTop); context.moveTo(frontRight, top); context.lineTo(right, backTop); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, bottom); context.lineTo(backLeft, bottom - offsetY); context.stroke(); context.setLineDash([])
+      }
     }
     if (shape.id === selectedId) { const bounds = shape.points.map(worldToScreen), minX = Math.min(...bounds.map(p => p.x)) - 8, minY = Math.min(...bounds.map(p => p.y)) - 8, maxX = Math.max(...bounds.map(p => p.x)) + 8, maxY = Math.max(...bounds.map(p => p.y)) + 8; context.setLineDash([4, 4]); context.strokeStyle = '#3978C8'; context.lineWidth = 1; context.strokeRect(minX, minY, maxX - minX, maxY - minY); context.setLineDash([]) }
   }
