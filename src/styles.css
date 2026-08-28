@@ -22,6 +22,7 @@ button { font: inherit; border: 0; cursor: pointer; }
 .tool-rail { position: absolute; z-index: 4; top: 80px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: row; align-items: center; max-width: calc(100vw - 32px); padding: 7px 8px; border-radius: 14px; background: #202b3a; box-shadow: 0 9px 25px #18304a30; overflow-x: auto; scrollbar-width: none; }
 .tool-rail::-webkit-scrollbar { display: none; }
 .tool-button { width: 39px; height: 39px; display: grid; place-items: center; color: #aeb9c8; background: transparent; border-radius: 10px; transition: color .15s, background .15s; }
+.tool-button svg { width: 20px; height: 20px; }
 .tool-button:hover { color: #fff; background: #304054; }.tool-button.active { color: white; background: #3978c8; box-shadow: inset 0 1px #ffffff30; }
 .tool-divider { display: flex; align-items: center; height: 39px; margin: 0 3px; padding-left: 8px; border-left: 1px solid #ffffff18; }
 .zoom-control { position: absolute; z-index: 3; right: 23px; bottom: 97px; display: flex; align-items: center; gap: 5px; padding: 5px; border: 1px solid #e0e7f0; border-radius: 9px; background: #ffffffdb; box-shadow: 0 4px 15px #1e38521b; backdrop-filter: blur(10px); }

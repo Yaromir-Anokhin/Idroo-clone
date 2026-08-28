@@ -29,6 +29,16 @@ const tools: { id: Tool; label: string; icon: typeof Pen }[] = [
   { id: 'eraser', label: 'Eraser', icon: Eraser }, { id: 'text', label: 'Text label', icon: Type },
 ]
 
+const ShapeGlyph = ({ kind }: { kind: Tool }) => {
+  const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
+  const paths: Record<string, string> = {
+    rectangle: 'M4 4h16v16H4z', parallelogram: 'M7 4h14l-4 16H3z', ellipse: 'M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16', triangle: 'M12 4l9 16H3z', rhombus: 'M12 3l9 9-9 9-9-9z',
+    pentagon: 'M12 3l8 6-3 10H7L4 9z', hexagon: 'M7 4h10l5 8-5 8H7l-5-8z', octagon: 'M8 3h8l5 5v8l-5 5H8l-5-5V8z', star: 'M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
+    cube: 'M4 7l5-4 11 3-5 4zM4 7v12l11 2V10M15 10l5-4v12l-5 3', cylinder: 'M4 6a8 3 0 1 0 16 0a8 3 0 1 0-16 0M4 6v12a8 3 0 1 0 16 0V6', cone: 'M12 3L4 19a8 3 0 1 0 16 0z', sphere: 'M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0M4 12a8 3 0 1 0 16 0a8 3 0 1 0-16 0M12 4a4 8 0 1 0 0 16a4 8 0 1 0 0-16', pyramid: 'M12 3L4 19h16zM12 3v16M4 19l8-5 8 5', prism: 'M4 7l5-4h11l-5 4zM4 7v12h11V7M15 7v12l5-4V3',
+  }
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path {...common} d={paths[kind] || paths.rectangle} /></svg>
+}
+
 const makeId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y)
 const pointToSegment = (p: Point, a: Point, b: Point) => {
@@ -269,15 +279,17 @@ function App() {
         context.moveTo(left, top + h); context.lineTo(backLeft, backTop + h)
         context.moveTo(left + w, top + h); context.lineTo(backLeft + w, backTop + h)
         context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.moveTo(left, top + h); context.lineTo(backLeft, backTop + h); context.moveTo(left, top); context.lineTo(backLeft, backTop); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'cylinder') {
         const radiusX = Math.max(12, w / 2), radiusY = Math.max(5, Math.min(18, radiusX * .28)), centerX = left + w / 2
         context.beginPath(); context.ellipse(centerX, top + radiusY, radiusX, radiusY, 0, 0, Math.PI * 2); context.stroke()
         context.beginPath(); context.moveTo(left, top + radiusY); context.lineTo(left, top + h - radiusY); context.ellipse(centerX, top + h - radiusY, radiusX, radiusY, 0, 0, Math.PI); context.moveTo(left + w, top + radiusY); context.lineTo(left + w, top + h - radiusY); context.stroke()
+        context.setLineDash([3, 3]); context.beginPath(); context.ellipse(centerX, top + h - radiusY, radiusX, radiusY, 0, Math.PI, Math.PI * 2); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'cone') {
         const centerX = left + w / 2, baseY = top + h, radiusX = Math.max(12, w / 2), radiusY = Math.max(5, Math.min(18, radiusX * .28))
-        context.beginPath(); context.moveTo(centerX, top); context.lineTo(left, baseY - radiusY); context.ellipse(centerX, baseY - radiusY, radiusX, radiusY, 0, 0, Math.PI); context.moveTo(centerX, top); context.lineTo(left + w, baseY - radiusY); context.ellipse(centerX, baseY - radiusY, radiusX, radiusY, 0, Math.PI, Math.PI * 2); context.stroke()
+        context.beginPath(); context.moveTo(centerX, top); context.lineTo(left, baseY - radiusY); context.moveTo(centerX, top); context.lineTo(left + w, baseY - radiusY); context.stroke(); context.setLineDash([3, 3]); context.beginPath(); context.ellipse(centerX, baseY - radiusY, radiusX, radiusY, 0, 0, Math.PI); context.stroke(); context.setLineDash([])
       }
       if (shape.kind === 'sphere') {
         const centerX = left + w / 2, centerY = top + h / 2
@@ -326,7 +338,7 @@ function App() {
 
   return <main className="app-shell">
     <header className="topbar"><div className="brand-mark"><span>m</span><strong>Math Board</strong></div><div className="room-meta"><span className="room-name">Algebra room</span><span className={`connection ${connected ? 'online' : ''}`}><i />{connected ? 'Connected' : 'Connecting'}</span><span className="participant-count"><Users size={14} /> {shapes.length ? '2' : '1'}</span></div><button className="share-button" onClick={share}>{copied ? <Check size={16} /> : <Share2 size={16} />}{copied ? 'Copied' : 'Share link'}</button></header>
-    <aside className="tool-rail">{tools.map(({ id, label, icon: Icon }, index) => <span key={id} className={index === 2 || index === 5 || index === 8 ? 'tool-divider' : ''}><button aria-label={label} title={label} className={`tool-button ${tool === id ? 'active' : ''}`} onClick={() => setTool(id)}><Icon size={19} strokeWidth={1.8} /></button></span>)}</aside>
+    <aside className="tool-rail">{tools.map(({ id, label, icon: Icon }, index) => <span key={id} className={index === 2 || index === 5 || index === 8 ? 'tool-divider' : ''}><button aria-label={label} title={label} className={`tool-button ${tool === id ? 'active' : ''}`} onClick={() => setTool(id)}>{id === 'rectangle' || id === 'parallelogram' || id === 'ellipse' || id === 'triangle' || id === 'rhombus' || id === 'pentagon' || id === 'hexagon' || id === 'octagon' || id === 'star' || id === 'cube' || id === 'cylinder' || id === 'cone' || id === 'sphere' || id === 'pyramid' || id === 'prism' ? <ShapeGlyph kind={id} /> : <Icon size={19} strokeWidth={1.8} />}</button></span>)}</aside>
     <canvas ref={canvasRef} className={`whiteboard-canvas cursor-${tool}`} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onWheel={zoomAt} />
     <div className="zoom-control"><button title="Zoom out" aria-label="Zoom out" onClick={() => { viewportRef.current.zoom = Math.max(.35, viewportRef.current.zoom - .1); setZoomPercent(Math.round(viewportRef.current.zoom * 100)); draw() }}><ZoomOut size={16} /></button><span>{zoomPercent}%</span><button title="Zoom in" aria-label="Zoom in" onClick={() => { viewportRef.current.zoom = Math.min(3.5, viewportRef.current.zoom + .1); setZoomPercent(Math.round(viewportRef.current.zoom * 100)); draw() }}><ZoomIn size={16} /></button><button title="Reset view" aria-label="Reset view" onClick={() => { viewportRef.current = { x: 0, y: 0, zoom: 1 }; setZoomPercent(100); draw() }}><RotateCcw size={15} /></button></div>
     <section className="property-bar"><div className="property-group"><span className="property-label">Ink</span>{colors.map(item => <button key={item} aria-label={`Use ${item} ink`} className={`swatch ${color === item ? 'selected' : ''}`} style={{ backgroundColor: item }} onClick={() => setColor(item)} />)}</div><div className="property-separator" /><div className="property-group"><span className="property-label">Stroke</span>{widths.map(item => <button key={item.value} className={`width-button width-${item.value} ${width === item.value ? 'selected' : ''}`} onClick={() => setWidth(item.value)} title={item.label}><span /></button>)}</div><div className="status-hint">{tool === 'select' ? 'Select and move objects' : tools.find(item => item.id === tool)?.label}</div></section>
