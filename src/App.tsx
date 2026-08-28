@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
 import {
-  ArrowUpRight, Box, Check, Circle, Cone, Cylinder, Eraser, Hand, Minus, MousePointer2, Pen,
+  ArrowUpRight, Box, Check, Circle, Cone, Cylinder, Diamond, Eraser, Hand, Minus, MousePointer2, Pen,
   RotateCcw, Share2, Square, Triangle, Type, Users, ZoomIn, ZoomOut,
 } from 'lucide-react'
 
-type Tool = 'select' | 'pan' | 'pen' | 'line' | 'arrow' | 'rectangle' | 'ellipse' | 'triangle' | 'cube' | 'cylinder' | 'cone' | 'eraser' | 'text'
+type Tool = 'select' | 'pan' | 'pen' | 'line' | 'arrow' | 'rectangle' | 'parallelogram' | 'ellipse' | 'triangle' | 'rhombus' | 'pentagon' | 'hexagon' | 'octagon' | 'star' | 'cube' | 'cylinder' | 'cone' | 'sphere' | 'pyramid' | 'prism' | 'eraser' | 'text'
 type Point = { x: number; y: number }
 type Shape = {
   id: string; kind: Exclude<Tool, 'select' | 'pan' | 'eraser'>; points: Point[]
@@ -19,8 +19,13 @@ const tools: { id: Tool; label: string; icon: typeof Pen }[] = [
   { id: 'select', label: 'Select', icon: MousePointer2 }, { id: 'pan', label: 'Pan canvas', icon: Hand },
   { id: 'pen', label: 'Pen', icon: Pen }, { id: 'line', label: 'Line', icon: Minus },
   { id: 'arrow', label: 'Vector arrow', icon: ArrowUpRight }, { id: 'rectangle', label: 'Rectangle', icon: Square },
-  { id: 'ellipse', label: 'Circle / ellipse', icon: Circle }, { id: 'triangle', label: 'Triangle', icon: Triangle },
-  { id: 'cube', label: '3D cube', icon: Box }, { id: 'cylinder', label: '3D cylinder', icon: Cylinder }, { id: 'cone', label: '3D cone', icon: Cone },
+  { id: 'parallelogram', label: 'Parallelogram', icon: Square }, { id: 'ellipse', label: 'Circle / ellipse', icon: Circle },
+  { id: 'triangle', label: 'Triangle', icon: Triangle }, { id: 'rhombus', label: 'Rhombus', icon: Diamond },
+  { id: 'pentagon', label: 'Pentagon', icon: Diamond }, { id: 'hexagon', label: 'Hexagon', icon: Diamond },
+  { id: 'octagon', label: 'Octagon', icon: Diamond }, { id: 'star', label: 'Star', icon: Diamond },
+  { id: 'cube', label: '3D cube', icon: Box }, { id: 'cylinder', label: '3D cylinder', icon: Cylinder },
+  { id: 'cone', label: '3D cone', icon: Cone }, { id: 'sphere', label: '3D sphere', icon: Circle },
+  { id: 'pyramid', label: '3D pyramid', icon: Triangle }, { id: 'prism', label: '3D prism', icon: Box },
   { id: 'eraser', label: 'Eraser', icon: Eraser }, { id: 'text', label: 'Text label', icon: Type },
 ]
 
@@ -36,6 +41,10 @@ const pointToEllipse = (point: Point, center: Point, radiusX: number, radiusY: n
   const normalized = Math.hypot((point.x - center.x) / Math.max(radiusX, 1), (point.y - center.y) / Math.max(radiusY, 1))
   return Math.abs(normalized - 1) * Math.min(radiusX, radiusY)
 }
+const polygonPoints = (center: Point, radiusX: number, radiusY: number, sides: number, rotation = -Math.PI / 2) => Array.from({ length: sides }, (_, index) => ({
+  x: center.x + Math.cos(rotation + index * Math.PI * 2 / sides) * radiusX,
+  y: center.y + Math.sin(rotation + index * Math.PI * 2 / sides) * radiusY,
+}))
 const shapeSegments = (shape: Shape): [Point, Point][] => {
   const [start, end = start] = shape.points
   if (shape.kind === 'ellipse') return []
@@ -148,7 +157,7 @@ function App() {
       const radiusY = Math.max(Math.abs(end.y - start.y) / 2, 1)
       return pointToEllipse(point, center, radiusX, radiusY) < tolerance || (insideBounds && Math.hypot((point.x - center.x) / radiusX, (point.y - center.y) / radiusY) < 1)
     }
-    if (shape.kind === 'rectangle' || shape.kind === 'triangle' || shape.kind === 'cube' || shape.kind === 'cylinder' || shape.kind === 'cone') return insideBounds
+    if (shape.kind !== 'pen' && shape.kind !== 'line' && shape.kind !== 'arrow') return insideBounds
     if (insideBounds && shape.points.length > 1) return true
     return shapeSegments(shape).some(([a, b]) => pointToSegment(point, a, b) < tolerance)
   }
@@ -240,10 +249,15 @@ function App() {
       context.stroke()
       if (shape.kind === 'arrow' && points.length > 1) { const end = points[points.length - 1], start = points[points.length - 2]; const angle = Math.atan2(end.y - start.y, end.x - start.x); context.beginPath(); context.moveTo(end.x, end.y); context.lineTo(end.x - 13 * Math.cos(angle - Math.PI / 6), end.y - 13 * Math.sin(angle - Math.PI / 6)); context.moveTo(end.x, end.y); context.lineTo(end.x - 13 * Math.cos(angle + Math.PI / 6), end.y - 13 * Math.sin(angle + Math.PI / 6)); context.stroke() }
     } else {
-      const start = points[0], end = points[1] || start, left = Math.min(start.x, end.x), top = Math.min(start.y, end.y), w = Math.abs(end.x - start.x), h = Math.abs(end.y - start.y)
+      const start = points[0], end = points[1] || start, left = Math.min(start.x, end.x), top = Math.min(start.y, end.y), right = Math.max(start.x, end.x), bottom = Math.max(start.y, end.y), w = Math.abs(end.x - start.x), h = Math.abs(end.y - start.y)
       if (shape.kind === 'rectangle') context.strokeRect(left, top, w, h)
+      if (shape.kind === 'parallelogram') { const skew = w * .2; context.moveTo(left + skew, top); context.lineTo(left + w, top); context.lineTo(right - skew, top + h); context.lineTo(left, top + h); context.closePath(); context.stroke() }
       if (shape.kind === 'ellipse') context.ellipse(left + w / 2, top + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2), context.stroke()
       if (shape.kind === 'triangle') { context.moveTo(left + w / 2, top); context.lineTo(left + w, top + h); context.lineTo(left, top + h); context.closePath(); context.stroke() }
+      if (shape.kind === 'rhombus') { const polygon = polygonPoints({ x: left + w / 2, y: top + h / 2 }, w / 2, h / 2, 4, 0); context.moveTo(polygon[0].x, polygon[0].y); polygon.slice(1).forEach(point => context.lineTo(point.x, point.y)); context.closePath(); context.stroke() }
+      const polygonSides = { pentagon: 5, hexagon: 6, octagon: 8 }[shape.kind as 'pentagon' | 'hexagon' | 'octagon']
+      if (polygonSides) { const polygon = polygonPoints({ x: left + w / 2, y: top + h / 2 }, w / 2, h / 2, polygonSides); context.moveTo(polygon[0].x, polygon[0].y); polygon.slice(1).forEach(point => context.lineTo(point.x, point.y)); context.closePath(); context.stroke() }
+      if (shape.kind === 'star') { const polygon = polygonPoints({ x: left + w / 2, y: top + h / 2 }, w / 2, h / 2, 10); context.moveTo(polygon[0].x, polygon[0].y); polygon.slice(1).forEach((point, index) => context.lineTo(point.x, point.y)); context.closePath(); context.stroke() }
       if (shape.kind === 'cube') {
         const offsetX = Math.max(14, w * .24), offsetY = Math.max(12, h * .2)
         const backLeft = left + offsetX, backTop = top - offsetY
@@ -265,6 +279,13 @@ function App() {
         const centerX = left + w / 2, baseY = top + h, radiusX = Math.max(12, w / 2), radiusY = Math.max(5, Math.min(18, radiusX * .28))
         context.beginPath(); context.moveTo(centerX, top); context.lineTo(left, baseY - radiusY); context.ellipse(centerX, baseY - radiusY, radiusX, radiusY, 0, 0, Math.PI); context.moveTo(centerX, top); context.lineTo(left + w, baseY - radiusY); context.ellipse(centerX, baseY - radiusY, radiusX, radiusY, 0, Math.PI, Math.PI * 2); context.stroke()
       }
+      if (shape.kind === 'sphere') {
+        const centerX = left + w / 2, centerY = top + h / 2
+        context.ellipse(centerX, centerY, w / 2, h / 2, 0, 0, Math.PI * 2); context.stroke()
+        context.beginPath(); context.ellipse(centerX, centerY, w * .22, h / 2, 0, 0, Math.PI * 2); context.ellipse(centerX, centerY, w / 2, h * .22, 0, 0, Math.PI * 2); context.stroke()
+      }
+      if (shape.kind === 'pyramid') { const centerX = left + w / 2; context.beginPath(); context.moveTo(centerX, top); context.lineTo(left, bottom); context.lineTo(right, bottom); context.closePath(); context.moveTo(centerX, top); context.lineTo(centerX, bottom); context.stroke() }
+      if (shape.kind === 'prism') { const offset = Math.max(12, w * .2); context.strokeRect(left, top, w - offset, h); context.strokeRect(left + offset, top - offset, w - offset, h); context.beginPath(); context.moveTo(left, top); context.lineTo(left + offset, top - offset); context.moveTo(right - offset, top); context.lineTo(right, top - offset); context.moveTo(right - offset, bottom); context.lineTo(right, bottom - offset); context.moveTo(left, bottom); context.lineTo(left + offset, bottom - offset); context.stroke() }
     }
     if (shape.id === selectedId) { const bounds = shape.points.map(worldToScreen), minX = Math.min(...bounds.map(p => p.x)) - 8, minY = Math.min(...bounds.map(p => p.y)) - 8, maxX = Math.max(...bounds.map(p => p.x)) + 8, maxY = Math.max(...bounds.map(p => p.y)) + 8; context.setLineDash([4, 4]); context.strokeStyle = '#3978C8'; context.lineWidth = 1; context.strokeRect(minX, minY, maxX - minX, maxY - minY); context.setLineDash([]) }
   }
